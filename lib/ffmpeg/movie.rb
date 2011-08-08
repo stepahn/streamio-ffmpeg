@@ -22,9 +22,24 @@ module FFMPEG
       output[/bitrate: (\d*)/]
       @bitrate = $1 ? $1.to_i : nil
       
-      @audio_streams = output.scan(/\((\w+)\): Audio: (.*)/).map{|arr| AudioStream.new(arr[0], arr[1]) }
-      @video_streams = output.scan(/\((\w+)\): Video: (.*)/).map{|arr| VideoStream.new(arr[0], arr[1]) }
-      @subtitles     = output.scan(/\((\w+)\): Subtitle: (.*)/).map{|arr| Subtitle.new(arr[0], arr[1]) }
+      @audio_streams = []
+      @video_streams = []
+      @subtitles     = []
+      
+      # parse streams
+      output.scan(/(\((\w+)\))?: (Audio|Video|Subtitle): (.+)/).each do |stream|
+        language = stream[1]
+        raw      = stream[3]
+        
+        case stream[2]
+          when 'Audio'
+            @audio_streams << AudioStream.new(language, raw)
+          when 'Video'
+            @video_streams << VideoStream.new(language, raw)
+          when 'Subtitle'
+            @subtitles << Subtitle.new(language, raw)
+        end
+      end
       
       @uncertain_duration = true #output.include?("Estimating duration from bitrate, this may be inaccurate") || @time > 0
       
