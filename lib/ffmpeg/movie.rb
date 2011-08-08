@@ -3,6 +3,15 @@ module FFMPEG
     attr_reader :path, :duration, :time, :bitrate
     attr_reader :audio_streams, :video_streams, :subtitles
     
+    LANGUAGE_MAP = {
+      'deu' => 'ger',
+      'und' => nil
+    }
+    
+    def self.language(value)
+      LANGUAGE_MAP.include?(value) ? LANGUAGE_MAP[value] : value
+    end
+    
     def initialize(path)
       raise Errno::ENOENT, "the file '#{path}' does not exist" unless File.exists?(path)
       
@@ -28,7 +37,7 @@ module FFMPEG
       
       # parse streams
       output.scan(/(\((\w+)\))?: (Audio|Video|Subtitle): (.+)/).each do |stream|
-        language = stream[1]
+        language = self.class.language(stream[1])
         raw      = stream[3]
         
         case stream[2]
