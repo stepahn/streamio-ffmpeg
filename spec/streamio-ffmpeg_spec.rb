@@ -21,4 +21,21 @@ describe FFMPEG do
       FFMPEG.logger.should == new_logger
     end
   end
+
+  describe "ffmpeg_binary" do
+    after(:each) do
+      FFMPEG.ffmpeg_binary = nil
+    end
+
+    it "should default to 'avconv'" do
+      File.stub(:exists?){ true }
+      FFMPEG.ffmpeg_binary.should == '/usr/bin/avconv'
+    end
+
+    it "should be assignable" do
+      new_binary = '/usr/local/bin/ffmpeg'
+      FFMPEG.ffmpeg_binary = new_binary
+      FFMPEG.ffmpeg_binary.should == new_binary
+    end
+  end
 end
