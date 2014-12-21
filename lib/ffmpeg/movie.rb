@@ -14,11 +14,9 @@ module FFMPEG
     
     def initialize(path)
       raise Errno::ENOENT, "the file '#{path}' does not exist" unless File.exists?(path)
-      
-      @path = escape(path)
 
-      stdin, stdout, stderr = Open3.popen3("ffmpeg", "-i", path) # Output will land in stderr
-      output = stderr.read
+      # ffmpeg will output to stderr
+      output = Open3.popen3(FFMPEG.ffmpeg_binary, '-i', path) { |stdin, stdout, stderr| stderr.read }
       
       fix_encoding(output)
       
@@ -95,10 +93,6 @@ module FFMPEG
     end
     
     protected
-    def escape(path)
-      map  =  { '\\' => '\\\\', '</' => '<\/', "\r\n" => '\n', "\n" => '\n', "\r" => '\n', '"' => '\\"', "'" => "\\'" }
-      path.gsub(/(\\|<\/|\r\n|[\n\r"'])/) { map[$1] }
-    end
     
     def fix_encoding(output)
       output[/test/] # Running a regexp on the string throws error if it's not UTF-8
