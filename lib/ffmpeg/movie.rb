@@ -11,7 +11,7 @@ module FFMPEG
       'deu' => 'ger',
       'und' => nil
     }
-   
+
     def self.language(value)
       LANGUAGE_MAP.include?(value) ? LANGUAGE_MAP[value] : value
     end
@@ -50,12 +50,12 @@ module FFMPEG
       @audio_streams = []
       @video_streams = []
       @subtitles     = []
-      
+
       # parse streams
       output.scan(/(\((\w+)\))?: (Audio|Video|Subtitle): (.+)/).each do |stream|
         language = self.class.language(stream[1])
         raw      = stream[3]
-        
+
         case stream[2]
           when 'Audio'
             @audio_streams << AudioStream.new(language, raw)
@@ -78,25 +78,25 @@ module FFMPEG
     def uncertain_duration?
       @uncertain_duration
     end
-    
+
     def audio_channels
       audio_streams.map(&:channels).compact
     end
-    
+
     # delegate some methods to the first audio_stream
     %w( codec sample_rate ).each do |method|
       define_method method do
         (stream = audio_streams.first) && stream.send(method)
       end
     end
-    
+
     # delegate some methods to the first video_stream
     %w( resolution width height colorspace sar dar calculated_aspect_ratio calculated_pixel_aspect_ratio frame_rate ).each do |method|
       define_method method do
         (stream = video_streams.first) && stream.send(method)
       end
     end
-    
+
     def video_codec
       video_streams.any? ? video_streams.first.codec : nil
     end
@@ -106,11 +106,11 @@ module FFMPEG
     end
 
     def transcode(output_file, options = EncodingOptions.new, transcoder_options = {}, &block)
-      Transcoder.new(self, output_file, options, transcoder_options).run &block
+      Transcoder.new(self, output_file, options, transcoder_options).run(&block)
     end
 
     def screenshot(output_file, options = EncodingOptions.new, transcoder_options = {}, &block)
-      Transcoder.new(self, output_file, options.merge(screenshot: true), transcoder_options).run &block
+      Transcoder.new(self, output_file, options.merge(screenshot: true), transcoder_options).run(&block)
     end
 
     protected
